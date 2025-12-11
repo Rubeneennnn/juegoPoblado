@@ -6,16 +6,37 @@ class Ciudadano:
         self.y = y
         self.vel = 1
         self.size = 20
-        self.color = (0, 150, 255)
+
+        self.img_idle = pygame.image.load("media/quieto.png").convert_alpha()
+        self.img_move = pygame.image.load("media/correr.png").convert_alpha()
+
+        self.img_idle = pygame.transform.scale(self.img_idle, (self.size, self.size))
+        self.img_move = pygame.transform.scale(self.img_move, (self.size, self.size))
+
+        self.is_moving = False
 
     def mover(self, keys):
-        personaje = (self.x, self.y)
-        if keys [pygame.K_LEFT]: self.x -= self.vel
-        if keys [pygame.K_RIGHT]: self.x += self.vel
-        if keys [pygame.K_UP]: self.y -= self.vel
-        if keys [pygame.K_DOWN]: self.y += self.vel
-        return (self.x, self.y)
+        self.is_moving = False
 
-    def dibujar(self,win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.size, self.size))
+        if keys[pygame.K_LEFT]:
+            self.x -= self.vel
+            self.is_moving = True
+        if keys[pygame.K_RIGHT]:
+            self.x += self.vel
+            self.is_moving = True
+        if keys[pygame.K_UP]:
+            self.y -= self.vel
+            self.is_moving = True
+        if keys[pygame.K_DOWN]:
+            self.y += self.vel
+            self.is_moving = True
 
+        return self.is_moving
+
+    def dibujar(self, win):
+        if self.is_moving:
+            imagen = self.img_move
+        else:
+            imagen = self.img_idle
+
+        win.blit(imagen, (self.x, self.y))

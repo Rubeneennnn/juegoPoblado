@@ -1,5 +1,4 @@
 import pygame
-import sys
 from ciudadano import Ciudadano
 
 pygame.init()
