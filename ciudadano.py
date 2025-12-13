@@ -5,7 +5,7 @@ class Ciudadano:
         self.x = x
         self.y = y
         self.vel = 1
-        self.size = 20
+        self.size = 50
 
         self.img_idle = pygame.image.load("media/quieto.png").convert_alpha()
         self.img_move = pygame.image.load("media/correr.png").convert_alpha()
