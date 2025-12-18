@@ -11,10 +11,10 @@ fondo_pueblo = pygame.transform.scale(
 )
 
 fondos_tiendas = [
-    pygame.transform.scale(pygame.image.load("media/fondo1.png").convert(), (800, 800)),
-    pygame.transform.scale(pygame.image.load("media/fondo2.png").convert(), (800, 800)),
-    pygame.transform.scale(pygame.image.load("media/fondo3.png").convert(), (800, 800)),
-    pygame.transform.scale(pygame.image.load("media/fondo4.png").convert(), (800, 800))
+    pygame.transform.scale(pygame.image.load("media/tiendaropa.jpg").convert(), (800, 800)),
+    pygame.transform.scale(pygame.image.load("media/tienda.jpeg").convert(), (800, 800)),
+    pygame.transform.scale(pygame.image.load("media/tienda.jpeg").convert(), (800, 800)),
+    pygame.transform.scale(pygame.image.load("media/tienda.jpeg").convert(), (800, 800))
 ]
 
 # -------- JUGADOR --------

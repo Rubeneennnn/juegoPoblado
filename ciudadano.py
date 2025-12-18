@@ -4,7 +4,7 @@ class Ciudadano:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.vel = 1
+        self.vel = 3
         self.size = 50
 
         self.img_idle = pygame.image.load("media/quieto.png").convert_alpha()
@@ -32,6 +32,8 @@ class Ciudadano:
             self.is_moving = True
 
         return self.is_moving
+
+
 
     def dibujar(self, win):
         if self.is_moving:
