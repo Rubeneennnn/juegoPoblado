@@ -5,7 +5,7 @@ pygame.init()
 win = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
 pygame.font.init()
-fuente = pygame.font.SysFont(None, 32)
+fuente = pygame.font.SysFont(None, 40)
 
 # -------- FONDOS --------
 fondo_pueblo = pygame.transform.scale(
@@ -43,13 +43,13 @@ tiendas = [
     pygame.Rect(140, 460, 90, 120)
 ]
 
-icono_carrito = pygame.image.load("media/").convert_alpha()
-icono_carrito = pygame.transform.scale(icono_carrito, (40, 40))
-rect_carrito = pygame.Rect(700, 10, 40, 40)
+icono_carrito = pygame.image.load("media/carro.png").convert_alpha()
+icono_carrito = pygame.transform.scale(icono_carrito, (60, 60))
+rect_carrito = pygame.Rect(720, 10, 60, 60)
 
-icono_comprados = pygame.image.load("media/").convert_alpha()
-icono_comprados = pygame.transform.scale(icono_comprados, (40, 40))
-rect_comprados = pygame.Rect(650, 10, 40, 40)
+icono_comprados = pygame.image.load("media/compra.png").convert_alpha()
+icono_comprados = pygame.transform.scale(icono_comprados, (60, 60))
+rect_comprados = pygame.Rect(650, 10, 60, 60)
 
 
 # -------- SALIDA --------
@@ -66,7 +66,7 @@ run = True
 while run:
     clock.tick(60)
     texto_dinero = fuente.render(f"{dinero} €", True, (255, 255, 255))
-    win.blit(texto_dinero, (20, 15))
+    win.blit(texto_dinero, (20, 25))
 
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
@@ -100,8 +100,6 @@ while run:
     # -------- DIBUJO --------
     if en_tienda == -1:
         win.blit(fondo_pueblo, (0, 0))
-        win.blit(icono_carrito, rect_carrito.topleft)
-        win.blit(icono_comprados, rect_comprados.topleft)
 
         for i in range(4):
             win.blit(imagenes_tiendas[i], tiendas[i].topleft)
@@ -110,20 +108,33 @@ while run:
         win.blit(img_salida, rect_salida.topleft)
 
     if mostrar_carrito:
-        pygame.draw.rect(win, (30, 30, 30), (200, 100, 400, 400))
-        y = 120
+        pygame.draw.rect(win, (20, 20, 20), (150, 100, 500, 450))
+        titulo = fuente.render("Carrito", True, (255, 255, 255))
+        win.blit(titulo, (160, 110))
+
+        y = 160
         for item in carrito:
             texto = fuente.render(f"- {item}", True, (255, 255, 255))
-            win.blit(texto, (220, y))
-            y += 30
+            win.blit(texto, (170, y))
+            y += 35
 
     if mostrar_comprados:
-        pygame.draw.rect(win, (20, 20, 60), (200, 100, 400, 400))
-        y = 120
+        pygame.draw.rect(win, (20, 20, 60), (150, 100, 500, 450))
+        titulo = fuente.render("Comprados", True, (255, 255, 255))
+        win.blit(titulo, (160, 110))
+
+        y = 160
         for item in comprados:
             texto = fuente.render(f"- {item}", True, (255, 255, 255))
-            win.blit(texto, (220, y))
-            y += 30
+            win.blit(texto, (170, y))
+            y += 35
+
+    if not mostrar_carrito and not mostrar_comprados:
+        jugador.mover(keys)
+
+    win.blit(icono_carrito, rect_carrito.topleft)
+    win.blit(icono_comprados, rect_comprados.topleft)
+    win.blit(texto_dinero, (20, 25))
 
     jugador.dibujar(win)
     pygame.display.update()
