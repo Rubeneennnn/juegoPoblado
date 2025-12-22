@@ -2,252 +2,289 @@ import pygame
 from ciudadano import Ciudadano
 
 pygame.init()
-win = pygame.display.set_mode((800, 800))
-clock = pygame.time.Clock()
 pygame.font.init()
 
-# Fuentes
-fuente_peque = pygame.font.SysFont("Verdana", 18)
+ANCHO, ALTO = 800, 800
+win = pygame.display.set_mode((ANCHO, ALTO))
+pygame.display.set_caption("Simulador de Tiendas")
+clock = pygame.time.Clock()
+
+# =====================================================
+# SISTEMA DE IMÁGENES
+# =====================================================
+IMAGENES = {}
+
+def cargar_img(ruta, size=None):
+    clave = (ruta, size)
+    if clave in IMAGENES:
+        return IMAGENES[clave]
+    try:
+        img = pygame.image.load(ruta).convert_alpha()
+        if size:
+            img = pygame.transform.smoothscale(img, size)
+    except:
+        img = pygame.Surface(size if size else (60, 60), pygame.SRCALPHA)
+    IMAGENES[clave] = img
+    return img
+
+# =====================================================
+# FUENTES
+# =====================================================
+fuente_peque = pygame.font.SysFont("Verdana", 16)
 fuente_normal = pygame.font.SysFont("Verdana", 26, bold=True)
 fuente_grande = pygame.font.SysFont("Verdana", 36, bold=True)
 
-# -------- FONDOS --------
-def cargar_imagen_segura(ruta, size=(800, 800)):
-    try:
-        return pygame.transform.scale(pygame.image.load(ruta).convert(), size)
-    except:
-        surf = pygame.Surface(size)
-        surf.fill((50, 50, 50))
-        return surf
+# =====================================================
+# CLASE PRODUCTO
+# =====================================================
+class Producto:
+    def __init__(self, nombre, precio, rect, ruta_img):
+        self.nombre = nombre
+        self.precio = precio
+        self.rect = rect
+        self.img = cargar_img(ruta_img, (60, 60))
 
-fondo_pueblo = cargar_imagen_segura("media/fondo.png")
+    def dibujar(self, win, hover=False):
+        if hover:
+            img = pygame.transform.smoothscale(self.img, (95, 95))
+            win.blit(img, (self.rect.x - 17, self.rect.y - 17))
+        else:
+            win.blit(self.img, self.rect.topleft)
+
+# =====================================================
+# IMÁGENES UI
+# =====================================================
+fondo_pueblo = cargar_img("media/fondo.png", (ANCHO, ALTO))
 fondos_tiendas = [
-    cargar_imagen_segura("media/tiendaRopa.png"),
-    cargar_imagen_segura("media/tiendaAnimales.png"),
-    cargar_imagen_segura("media/tiendaInformatica.png"),
-    cargar_imagen_segura("media/tiendaSupermercado.png")
+    cargar_img("media/tiendaRopa.png", (ANCHO, ALTO)),
+    cargar_img("media/tiendaAnimales.png", (ANCHO, ALTO)),
 ]
 
-# -------- MONEDA PERSONALIZADA --------
-try:
-    img_moneda = pygame.transform.scale(pygame.image.load("media/moneda.png").convert_alpha(), (30, 30))
-except:
-    img_moneda = pygame.Surface((30, 30), pygame.SRCALPHA)
-    pygame.draw.circle(img_moneda, (255, 215, 0), (15, 15), 15)
+img_moneda = cargar_img("media/moneda.png", (30, 30))
+icono_carrito = cargar_img("media/carro.png", (60, 60))
+icono_comprados = cargar_img("media/compra.png", (60, 60))
+icono_salida = cargar_img("media/salida.png", (60, 60))
 
-# -------- JUGADOR Y DINERO --------
-jugador = Ciudadano(100, 100, 800, 800)
+# POSICIONES ICONOS
+rect_carrito = pygame.Rect(720, 10, 60, 60)
+rect_comprados = pygame.Rect(650, 10, 60, 60)
+rect_salida = pygame.Rect(580, 10, 60, 60)
+
+# =====================================================
+# JUGADOR
+# =====================================================
+jugador = Ciudadano(300, 300, ANCHO, ALTO)
+
+# =====================================================
+# ECONOMÍA
+# =====================================================
 dinero = 5000
 carrito = []
 comprados = []
+
 mostrar_carrito = False
 mostrar_comprados = False
 
-# -------- NOTIFICACIONES --------
-mensaje_pantalla = ""
-timer_mensaje = 0
+# =====================================================
+# NOTIFICACIONES
+# =====================================================
+mensaje = ""
+timer_msg = 0
 
-def mostrar_notificacion(texto):
-    global mensaje_pantalla, timer_mensaje
-    mensaje_pantalla = texto
-    timer_mensaje = 90
+def notificar(txt):
+    global mensaje, timer_msg
+    mensaje = txt
+    timer_msg = 90
 
-def realizar_compra():
-    global dinero
-    if not mostrar_carrito:
-        mostrar_notificacion("¡Abre el carrito (V) para comprar!")
-        return
-    if len(carrito) > 0:
-        coste = sum(i[1] for i in carrito)
-        if dinero >= coste:
-            dinero -= coste
-            for item in carrito: comprados.append(item[0])
-            carrito.clear()
-            mostrar_notificacion("¡Compra realizada!")
-        else:
-            mostrar_notificacion("Dinero insuficiente")
-    else:
-        mostrar_notificacion("El carrito está vacío")
+# =====================================================
+# TIENDAS
+# =====================================================
+tiendas_rects = [
+    pygame.Rect(60, 120, 90, 120),
+    pygame.Rect(140, 220, 90, 120),
+]
 
-# -------- PRODUCTOS POR TIENDA --------
+imagenes_tiendas = [
+    cargar_img("media/tienda1.png", (90, 120)),
+    cargar_img("media/tienda2.png", (90, 120)),
+]
+
+# =====================================================
+# PRODUCTOS
+# =====================================================
 tiendas_items = {
-    0: { # TIENDA DE ROPA
-        "Chaqueta Azul": [pygame.Rect(275, 250, 60, 60), 250, "media/chaquetaAzul.png"],
-        "Chaqueta Blanca": [pygame.Rect(125, 250, 60, 60), 250, "media/chaquetaBlanca.png"],
-        "Chaqueta Negra": [pygame.Rect(125, 350, 60, 60), 250, "media/chaquetaNegra.png"],
-        "Chaqueta Rosa": [pygame.Rect(275, 350, 60, 60), 250, "media/chaquetaRosa.png"],
-        "Camiseta Azul": [pygame.Rect(475, 250, 60, 60), 45, "media/camisetaAzul.png"],
-        "Camiseta Blanca": [pygame.Rect(625, 250, 60, 60), 45, "media/camisetaBlanca.png"],
-        "Camiseta Negra": [pygame.Rect(475, 350, 60, 60), 45, "media/camisetaNegra.png"],
-        "Camiseta Rosa": [pygame.Rect(625, 350, 60, 60), 45, "media/camisetaRosa.png"],
-        "Sudadera Azul": [pygame.Rect(275, 525, 60, 60), 80, "media/sudaderaAzul.png"],
-        "Sudadera Blanca": [pygame.Rect(125, 525, 60, 60), 80, "media/sudaderaBlanca.png"],
-        "Sudadera Negra": [pygame.Rect(310, 600, 60, 60), 80, "media/sudaderaNegra.png"],
-        "Sudadera Rosa": [pygame.Rect(310, 700, 60, 60), 80, "media/sudaderaRosa.png"],
-        "Pantalon Azul": [pygame.Rect(475, 525, 60, 60), 50, "media/pantalonAzul.png"],
-        "Pantalon Blanca": [pygame.Rect(625, 525, 60, 60), 50, "media/pantalonBlanco.png"],
-        "Pantalon Gris": [pygame.Rect(475, 655, 60, 60), 50, "media/pantalonGris.png"],
-        "Pantalon Negro": [pygame.Rect(625, 655, 60, 60), 50, "media/pantalonNegro.png"]
-    },
-    1: { # TIENDA DE ANIMALES
-        "Perro": [pygame.Rect(275, 250, 60, 60), 500, "media/perro.png"],
-        "Gato": [pygame.Rect(125, 250, 60, 60), 400, "media/gato.png"],
-        "Hamster": [pygame.Rect(125, 350, 60, 60), 50, "media/hamster.png"],
-        "Pez": [pygame.Rect(275, 350, 60, 60), 20, "media/pez.png"],
-        "Spray Animales": [pygame.Rect(475, 250, 60, 60), 15, "media/sprayAnimales.png"],
-        "Aspiradora": [pygame.Rect(625, 250, 60, 60), 120, "media/aspiradoraAnimales.png"],
-        "Bolsas Basura": [pygame.Rect(475, 350, 60, 60), 5, "media/bolsasBasura.png"],
-        "Limpieza Extra": [pygame.Rect(625, 350, 60, 60), 10, "media/bolsasBasura.png"],
-        "Comida Perros": [pygame.Rect(275, 525, 60, 60), 30, "media/comidaPerros.png"],
-        "Comida Gatos": [pygame.Rect(125, 525, 60, 60), 25, "media/comidaGatos.png"],
-        "Comida Hamster": [pygame.Rect(310, 600, 60, 60), 10, "media/comidaHamster.png"],
-        "Comida Peces": [pygame.Rect(310, 700, 60, 60), 8, "media/comidaPeces.png"],
-        "Juguetes Perro": [pygame.Rect(475, 525, 60, 60), 20, "media/jueguetesPerro.png"],
-        "Juguetes Gato": [pygame.Rect(625, 525, 60, 60), 15, "media/juguetesGato.png"],
-        "Juguetes Hamster": [pygame.Rect(475, 655, 60, 60), 12, "media/jueguetesHamster.png"],
-        "Juguetes Peces": [pygame.Rect(625, 655, 60, 60), 10, "media/juguetesPeces.png"]
-    }
+    0: [  # ROPA
+        Producto("Chaqueta Azul", 250, pygame.Rect(125, 200, 60, 60), "media/chaquetaAzul.png"),
+        Producto("Chaqueta Blanca", 250, pygame.Rect(275, 200, 60, 60), "media/chaquetaBlanca.png"),
+        Producto("Chaqueta Negra", 250, pygame.Rect(425, 200, 60, 60), "media/chaquetaNegra.png"),
+        Producto("Chaqueta Rosa", 250, pygame.Rect(575, 200, 60, 60), "media/chaquetaRosa.png"),
+        Producto("Camiseta Azul", 45, pygame.Rect(125, 300, 60, 60), "media/camisetaAzul.png"),
+        Producto("Camiseta Blanca", 45, pygame.Rect(275, 300, 60, 60), "media/camisetaBlanca.png"),
+        Producto("Camiseta Negra", 45, pygame.Rect(425, 300, 60, 60), "media/camisetaNegra.png"),
+        Producto("Camiseta Rosa", 45, pygame.Rect(575, 300, 60, 60), "media/camisetaRosa.png"),
+        Producto("Sudadera Azul", 80, pygame.Rect(125, 400, 60, 60), "media/sudaderaAzul.png"),
+        Producto("Sudadera Blanca", 80, pygame.Rect(275, 400, 60, 60), "media/sudaderaBlanca.png"),
+        Producto("Sudadera Negra", 80, pygame.Rect(425, 400, 60, 60), "media/sudaderaNegra.png"),
+        Producto("Sudadera Rosa", 80, pygame.Rect(575, 400, 60, 60), "media/sudaderaRosa.png"),
+        Producto("Pantalón Azul", 50, pygame.Rect(125, 500, 60, 60), "media/pantalonAzul.png"),
+        Producto("Pantalón Blanco", 50, pygame.Rect(275, 500, 60, 60), "media/pantalonBlanco.png"),
+        Producto("Pantalón Gris", 50, pygame.Rect(425, 500, 60, 60), "media/pantalonGris.png"),
+        Producto("Pantalón Negro", 50, pygame.Rect(575, 500, 60, 60), "media/pantalonNegro.png"),
+    ],
+    1: [  # ANIMALES
+        Producto("Perro", 500, pygame.Rect(125, 200, 60, 60), "media/animalPerro.png"),
+        Producto("Gato", 400, pygame.Rect(275, 200, 60, 60), "media/animalGato.png"),
+        Producto("Hamster", 50, pygame.Rect(425, 200, 60, 60), "media/animalHamster.png"),
+        Producto("Pez", 20, pygame.Rect(575, 200, 60, 60), "media/animalPez.png"),
+        Producto("Comida Perros", 30, pygame.Rect(125, 300, 60, 60), "media/comidaPerros.png"),
+        Producto("Comida Gatos", 25, pygame.Rect(275, 300, 60, 60), "media/comidaGatos.png"),
+        Producto("Comida Hamster", 10, pygame.Rect(425, 300, 60, 60), "media/comidaHamster.png"),
+        Producto("Comida Peces", 8, pygame.Rect(575, 300, 60, 60), "media/comidaPeces.png"),
+        Producto("Juguete Perro", 20, pygame.Rect(125, 400, 60, 60), "media/jueguetesPerro.png"),
+        Producto("Juguete Gato", 15, pygame.Rect(275, 400, 60, 60), "media/juguetesGato.png"),
+        Producto("Juguete Hamster", 12, pygame.Rect(425, 400, 60, 60), "media/jueguetesHamster.png"),
+        Producto("Juguete Peces", 10, pygame.Rect(575, 400, 60, 60), "media/juguetesPeces.png"),
+        Producto("Spray Limpieza", 15, pygame.Rect(125, 500, 60, 60), "media/limpiezaSpray.png"),
+        Producto("Bolsas Basura", 5, pygame.Rect(275, 500, 60, 60), "media/limpiezaBolsas.png"),
+        Producto("Aspiradora", 120, pygame.Rect(425, 500, 60, 60), "media/limpiezaAspiradora.png"),
+    ]
 }
 
-# CORRECCIÓN DE CARGA DE IMÁGENES
-for t_id in tiendas_items:
-    for nombre, datos in tiendas_items[t_id].items():
-        try:
-            # datos[2] contiene la cadena de texto con la ruta del archivo
-            img = pygame.image.load(datos[2]).convert_alpha()
-        except:
-            # Marcador temporal si el archivo no existe
-            img = pygame.Surface((60, 60))
-            img.fill((200, 0, 0))
-
-        datos.append(pygame.transform.scale(img, (60, 60)))  # Se añade al índice 3
-
-# -------- INTERFAZ --------
-tiendas = [pygame.Rect(60, 120, 90, 120), pygame.Rect(140, 220, 90, 120), pygame.Rect(60, 340, 90, 120), pygame.Rect(140, 460, 90, 120)]
-imagenes_tiendas = [cargar_imagen_segura(f"media/tienda{i+1}.png", (90, 120)) for i in range(4)]
-icono_carrito = cargar_imagen_segura("media/carro.png", (60, 60))
-rect_carrito = pygame.Rect(720, 10, 60, 60)
-icono_comprados = cargar_imagen_segura("media/compra.png", (60, 60))
-rect_comprados = pygame.Rect(650, 10, 60, 60)
-img_salida = cargar_imagen_segura("media/salida.png", (140, 60))
-rect_salida = pygame.Rect(660, 740, 140, 60)
-
+# =====================================================
+# ESTADO
+# =====================================================
 en_tienda = -1
 run = True
 
+# =====================================================
+# BUCLE PRINCIPAL
+# =====================================================
 while run:
     clock.tick(60)
-    win.fill((30, 30, 30))
     keys = pygame.key.get_pressed()
     jugador_rect = pygame.Rect(jugador.x, jugador.y, jugador.size, jugador.size)
 
     for e in pygame.event.get():
-        if e.type == pygame.QUIT: run = False
-        if e.type == pygame.MOUSEBUTTONDOWN:
-            if e.button == 1:
-                if rect_carrito.collidepoint(e.pos):
-                    mostrar_carrito = not mostrar_carrito
-                    mostrar_comprados = False
-                if rect_comprados.collidepoint(e.pos):
-                    mostrar_comprados = not mostrar_comprados
-                    mostrar_carrito = False
-            if e.button == 3 and mostrar_carrito:
-                for i, item in enumerate(carrito):
-                    rect_item_lista = pygame.Rect(145, 200 + (i * 35), 510, 32)
-                    if rect_item_lista.collidepoint(e.pos):
-                        removido = carrito.pop(i)
-                        mostrar_notificacion(f"Eliminado: {removido[0]}")
-                        break
+        if e.type == pygame.QUIT:
+            run = False
 
         if e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_v: mostrar_carrito = not mostrar_carrito; mostrar_comprados = False
-            if e.key == pygame.K_c: mostrar_comprados = not mostrar_comprados; mostrar_carrito = False
+
+            if e.key == pygame.K_v:
+                mostrar_carrito = not mostrar_carrito
+                mostrar_comprados = False
+
+            if e.key == pygame.K_c:
+                mostrar_comprados = not mostrar_comprados
+                mostrar_carrito = False
+
+            if e.key == pygame.K_t and carrito:
+                carrito.pop()
+                notificar("Producto eliminado")
+
             if e.key == pygame.K_e and en_tienda in tiendas_items:
-                for nombre, datos in tiendas_items[en_tienda].items():
-                    if jugador_rect.colliderect(datos[0]):
-                        carrito.append((nombre, datos[1]))
-                        mostrar_notificacion(f"Añadido: {nombre}")
-                        break
-            if e.key == pygame.K_r: realizar_compra()
-            if e.key == pygame.K_g and mostrar_carrito and len(carrito) > 0:
-                removido = carrito.pop(); mostrar_notificacion(f"Quitado: {removido[0]}")
+                for p in tiendas_items[en_tienda]:
+                    if jugador_rect.colliderect(p.rect):
+                        carrito.append(p)
+                        notificar(f"Añadido: {p.nombre}")
+
+            if e.key == pygame.K_r and carrito:
+                total = sum(p.precio for p in carrito)
+                if dinero >= total:
+                    dinero -= total
+                    comprados.extend(carrito)
+                    carrito.clear()
+                    notificar("Compra realizada")
+                else:
+                    notificar("Dinero insuficiente")
+
+            if e.key == pygame.K_g and en_tienda != -1:
+                carrito.clear()
+                en_tienda = -1
+                jugador.x, jugador.y = 300, 300
 
     if not mostrar_carrito and not mostrar_comprados:
         jugador.mover(keys)
 
-    # Lógica Escenas
+    # =====================================================
+    # DIBUJADO
+    # =====================================================
     if en_tienda == -1:
         win.blit(fondo_pueblo, (0, 0))
-        for i, t in enumerate(tiendas):
+        for i, t in enumerate(tiendas_rects):
             win.blit(imagenes_tiendas[i], t.topleft)
             if jugador_rect.colliderect(t):
                 en_tienda = i
                 jugador.x, jugador.y = 400, 650
     else:
         win.blit(fondos_tiendas[en_tienda], (0, 0))
-        win.blit(img_salida, rect_salida.topleft)
-        if jugador_rect.colliderect(rect_salida):
-            en_tienda = -1
-            jugador.x, jugador.y = 300, 300
+        for p in tiendas_items[en_tienda]:
+            hover = jugador_rect.colliderect(p.rect)
+            p.dibujar(win, hover)
+            if hover:
+                win.blit(
+                    fuente_peque.render(f"{p.precio}€  [E]", True, (255, 255, 255)),
+                    (p.rect.x - 5, p.rect.y - 25)
+                )
 
-        # Dibujar Items de la Tienda Actual
-        if en_tienda in tiendas_items:
-            for nombre, datos in tiendas_items[en_tienda].items():
-                rect_base, precio, _, img_base = datos
-                if jugador_rect.colliderect(rect_base):
-                    img_zoom = pygame.transform.scale(img_base, (95, 95))
-                    win.blit(img_zoom, (rect_base.x - 17, rect_base.y - 17))
-                    txt_info = fuente_peque.render(f"{precio}€ - [E] Añadir", True, (255, 255, 255))
-                    win.blit(txt_info, (rect_base.x - 20, rect_base.y - 45))
-                else:
-                    win.blit(img_base, rect_base.topleft)
+    # =====================================================
+    # UI SUPERIOR
+    # =====================================================
+    win.blit(icono_salida, rect_salida)
+    win.blit(icono_comprados, rect_comprados)
+    win.blit(icono_carrito, rect_carrito)
 
-    # UI DINERO Y CONTROLES
-    pygame.draw.rect(win, (50, 50, 50), (10, 10, 240, 50), border_radius=10)
+    win.blit(fuente_peque.render("[G]", True, (200, 200, 200)), (595, 75))
+    win.blit(fuente_peque.render("[C]", True, (200, 200, 200)), (665, 75))
+    win.blit(fuente_peque.render("[V]", True, (200, 200, 200)), (735, 75))
+
+    pygame.draw.rect(win, (40, 40, 40), (10, 10, 240, 50), border_radius=10)
     win.blit(img_moneda, (20, 20))
-    win.blit(fuente_normal.render(f"{dinero}", True, (255, 215, 0)), (60, 18))
-    win.blit(fuente_peque.render("[V] Carrito", True, (200, 200, 200)), (715, 75))
-    win.blit(fuente_peque.render("[C] Armario", True, (200, 200, 200)), (645, 75))
-    win.blit(icono_carrito, rect_carrito.topleft)
-    win.blit(icono_comprados, rect_comprados.topleft)
+    win.blit(fuente_normal.render(str(dinero), True, (255, 215, 0)), (60, 18))
 
-    # VENTANAS CARRITO Y COMPRAS
+    # =====================================================
+    # CARRITO
+    # =====================================================
     if mostrar_carrito:
-        overlay = pygame.Surface((550, 520), pygame.SRCALPHA)
-        pygame.draw.rect(overlay, (40, 40, 40, 240), (0, 0, 550, 520), border_radius=20)
-        win.blit(overlay, (125, 90))
-        pygame.draw.rect(win, (255, 255, 255), (125, 90, 550, 520), 2, border_radius=20)
-        win.blit(fuente_grande.render("Carrito", True, (200, 200, 255)), (150, 105))
-        win.blit(fuente_peque.render("[R] Comprar  |  [G] Quitar último", True, (100, 255, 100)), (150, 150))
-        total_actual = sum(i[1] for i in carrito)
-        win.blit(fuente_normal.render(f"Total: {total_actual}€", True, (255, 255, 255)), (480, 105))
-        for i, item in enumerate(carrito):
-            y_pos = 200 + (i * 35)
-            if y_pos < 560:
-                pygame.draw.rect(win, (60, 60, 60), (145, y_pos - 5, 510, 32), border_radius=5)
-                win.blit(fuente_peque.render(f"🛒 {item[0]}", True, (250, 250, 250)), (160, y_pos))
-                win.blit(fuente_peque.render(f"{item[1]}€", True, (150, 255, 150)), (580, y_pos))
+        s = pygame.Surface((550, 500), pygame.SRCALPHA)
+        pygame.draw.rect(s, (40, 40, 40, 230), s.get_rect(), border_radius=20)
+        win.blit(s, (125, 120))
 
+        win.blit(fuente_grande.render("Carrito", True, (200, 200, 255)), (150, 140))
+        win.blit(fuente_peque.render("[R] Comprar todo   [T] Quitar último", True, (180, 255, 180)), (150, 180))
+
+        for i, p in enumerate(carrito):
+            win.blit(
+                fuente_peque.render(f"{p.nombre} - {p.precio}€", True, (255, 255, 255)),
+                (150, 220 + i * 28)
+            )
+
+    # =====================================================
+    # COMPRADOS
+    # =====================================================
     if mostrar_comprados:
-        overlay = pygame.Surface((550, 500), pygame.SRCALPHA)
-        pygame.draw.rect(overlay, (30, 50, 30, 240), (0, 0, 550, 500), border_radius=20)
-        win.blit(overlay, (125, 100))
-        pygame.draw.rect(win, (100, 255, 100), (125, 100, 550, 500), 2, border_radius=20)
-        win.blit(fuente_grande.render("Armario", True, (150, 255, 150)), (150, 120))
-        for i, item in enumerate(comprados):
-            y_pos = 180 + (i * 35)
-            if y_pos < 560: win.blit(fuente_peque.render(f"✨ {item}", True, (255, 255, 255)), (170, y_pos))
+        s = pygame.Surface((550, 500), pygame.SRCALPHA)
+        pygame.draw.rect(s, (30, 50, 30, 230), s.get_rect(), border_radius=20)
+        win.blit(s, (125, 120))
 
-    # NOTIFICACIONES
-    if timer_mensaje > 0:
-        s = pygame.Surface((450, 60), pygame.SRCALPHA)
-        pygame.draw.rect(s, (0, 0, 0, 200), (0, 0, 450, 60), border_radius=15)
-        win.blit(s, (175, 370))
-        txt = fuente_normal.render(mensaje_pantalla, True, (255, 255, 100))
-        win.blit(txt, txt.get_rect(center=(400, 400)))
-        timer_mensaje -= 1
+        win.blit(fuente_grande.render("Comprados", True, (150, 255, 150)), (150, 140))
+
+        for i, p in enumerate(comprados):
+            win.blit(
+                fuente_peque.render(p.nombre, True, (255, 255, 255)),
+                (150, 200 + i * 28)
+            )
 
     jugador.dibujar(win)
+
+    if timer_msg > 0:
+        s = pygame.Surface((450, 60), pygame.SRCALPHA)
+        pygame.draw.rect(s, (0, 0, 0, 200), s.get_rect(), border_radius=15)
+        win.blit(s, (175, 370))
+        win.blit(fuente_normal.render(mensaje, True, (255, 255, 100)), (200, 385))
+        timer_msg -= 1
+
     pygame.display.update()
 
 pygame.quit()
+
