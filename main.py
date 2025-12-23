@@ -10,7 +10,7 @@ pygame.display.set_caption("Simulador de Tiendas")
 clock = pygame.time.Clock()
 
 # =====================================================
-# SISTEMA DE IMÁGENES
+# SISTEMA DE IMÁGENES (CACHE + ALPHA)
 # =====================================================
 IMAGENES = {}
 
@@ -52,12 +52,14 @@ class Producto:
             win.blit(self.img, self.rect.topleft)
 
 # =====================================================
-# IMÁGENES UI
+# FONDOS E ICONOS
 # =====================================================
 fondo_pueblo = cargar_img("media/fondo.png", (ANCHO, ALTO))
 fondos_tiendas = [
     cargar_img("media/tiendaRopa.png", (ANCHO, ALTO)),
     cargar_img("media/tiendaAnimales.png", (ANCHO, ALTO)),
+    cargar_img("media/tiendaInformatica.png", (ANCHO, ALTO)),
+    cargar_img("media/tiendaSupermercado.png", (ANCHO, ALTO)),
 ]
 
 img_moneda = cargar_img("media/moneda.png", (30, 30))
@@ -65,10 +67,9 @@ icono_carrito = cargar_img("media/carro.png", (60, 60))
 icono_comprados = cargar_img("media/compra.png", (60, 60))
 icono_salida = cargar_img("media/salida.png", (60, 60))
 
-# POSICIONES ICONOS
-rect_carrito = pygame.Rect(720, 10, 60, 60)
-rect_comprados = pygame.Rect(650, 10, 60, 60)
 rect_salida = pygame.Rect(580, 10, 60, 60)
+rect_comprados = pygame.Rect(650, 10, 60, 60)
+rect_carrito = pygame.Rect(720, 10, 60, 60)
 
 # =====================================================
 # JUGADOR
@@ -97,56 +98,115 @@ def notificar(txt):
     timer_msg = 90
 
 # =====================================================
-# TIENDAS
+# TIENDAS (ENTRADAS)
 # =====================================================
 tiendas_rects = [
-    pygame.Rect(60, 120, 90, 120),
-    pygame.Rect(140, 220, 90, 120),
+    pygame.Rect(20, 375, 90, 120),
+    pygame.Rect(175, 375, 90, 120),
+    pygame.Rect(20, 500, 90, 120),
+    pygame.Rect(175, 500, 90, 120),
 ]
 
 imagenes_tiendas = [
     cargar_img("media/tienda1.png", (90, 120)),
     cargar_img("media/tienda2.png", (90, 120)),
+    cargar_img("media/tienda3.png", (90, 120)),
+    cargar_img("media/tienda4.png", (90, 120)),
 ]
 
 # =====================================================
-# PRODUCTOS
+# PRODUCTOS DE TODAS LAS TIENDAS
 # =====================================================
 tiendas_items = {
-    0: [  # ROPA
-        Producto("Chaqueta Azul", 250, pygame.Rect(125, 200, 60, 60), "media/chaquetaAzul.png"),
-        Producto("Chaqueta Blanca", 250, pygame.Rect(275, 200, 60, 60), "media/chaquetaBlanca.png"),
-        Producto("Chaqueta Negra", 250, pygame.Rect(425, 200, 60, 60), "media/chaquetaNegra.png"),
-        Producto("Chaqueta Rosa", 250, pygame.Rect(575, 200, 60, 60), "media/chaquetaRosa.png"),
-        Producto("Camiseta Azul", 45, pygame.Rect(125, 300, 60, 60), "media/camisetaAzul.png"),
-        Producto("Camiseta Blanca", 45, pygame.Rect(275, 300, 60, 60), "media/camisetaBlanca.png"),
-        Producto("Camiseta Negra", 45, pygame.Rect(425, 300, 60, 60), "media/camisetaNegra.png"),
-        Producto("Camiseta Rosa", 45, pygame.Rect(575, 300, 60, 60), "media/camisetaRosa.png"),
-        Producto("Sudadera Azul", 80, pygame.Rect(125, 400, 60, 60), "media/sudaderaAzul.png"),
-        Producto("Sudadera Blanca", 80, pygame.Rect(275, 400, 60, 60), "media/sudaderaBlanca.png"),
-        Producto("Sudadera Negra", 80, pygame.Rect(425, 400, 60, 60), "media/sudaderaNegra.png"),
-        Producto("Sudadera Rosa", 80, pygame.Rect(575, 400, 60, 60), "media/sudaderaRosa.png"),
-        Producto("Pantalón Azul", 50, pygame.Rect(125, 500, 60, 60), "media/pantalonAzul.png"),
-        Producto("Pantalón Blanco", 50, pygame.Rect(275, 500, 60, 60), "media/pantalonBlanco.png"),
-        Producto("Pantalón Gris", 50, pygame.Rect(425, 500, 60, 60), "media/pantalonGris.png"),
-        Producto("Pantalón Negro", 50, pygame.Rect(575, 500, 60, 60), "media/pantalonNegro.png"),
+
+    # ================= ROPA =================
+    0: [
+        Producto("Chaqueta Azul", 250, pygame.Rect(125, 250, 60, 60), "media/chaquetaAzul.png"),
+        Producto("Chaqueta Blanca", 250, pygame.Rect(275, 250, 60, 60), "media/chaquetaBlanca.png"),
+        Producto("Chaqueta Negra", 250, pygame.Rect(125, 375, 60, 60), "media/chaquetaNegra.png"),
+        Producto("Chaqueta Rosa", 250, pygame.Rect(275, 375, 60, 60), "media/chaquetaRosa.png"),
+
+        Producto("Camiseta Azul", 45, pygame.Rect(475, 250, 60, 60), "media/camisetaAzul.png"),
+        Producto("Camiseta Blanca", 45, pygame.Rect(625, 250, 60, 60), "media/camisetaBlanca.png"),
+        Producto("Camiseta Negra", 45, pygame.Rect(475, 375, 60, 60), "media/camisetaNegra.png"),
+        Producto("Camiseta Rosa", 45, pygame.Rect(625, 375, 60, 60), "media/camisetaRosa.png"),
+
+        Producto("Sudadera Azul", 80, pygame.Rect(125, 550, 60, 60), "media/sudaderaAzul.png"),
+        Producto("Sudadera Blanca", 80, pygame.Rect(275, 550, 60, 60), "media/sudaderaBlanca.png"),
+        Producto("Sudadera Negra", 80, pygame.Rect(125, 675, 60, 60), "media/sudaderaNegra.png"),
+        Producto("Sudadera Rosa", 80, pygame.Rect(275, 675, 60, 60), "media/sudaderaRosa.png"),
+
+        Producto("Pantalón Azul", 50, pygame.Rect(475, 550, 60, 60), "media/pantalonAzul.png"),
+        Producto("Pantalón Blanco", 50, pygame.Rect(625, 550, 60, 60), "media/pantalonBlanco.png"),
+        Producto("Pantalón Gris", 50, pygame.Rect(475, 675, 60, 60), "media/pantalonGris.png"),
+        Producto("Pantalón Negro", 50, pygame.Rect(625, 675, 60, 60), "media/pantalonNegro.png"),
     ],
-    1: [  # ANIMALES
-        Producto("Perro", 500, pygame.Rect(125, 200, 60, 60), "media/animalPerro.png"),
-        Producto("Gato", 400, pygame.Rect(275, 200, 60, 60), "media/animalGato.png"),
-        Producto("Hamster", 50, pygame.Rect(425, 200, 60, 60), "media/animalHamster.png"),
-        Producto("Pez", 20, pygame.Rect(575, 200, 60, 60), "media/animalPez.png"),
-        Producto("Comida Perros", 30, pygame.Rect(125, 300, 60, 60), "media/comidaPerros.png"),
-        Producto("Comida Gatos", 25, pygame.Rect(275, 300, 60, 60), "media/comidaGatos.png"),
-        Producto("Comida Hamster", 10, pygame.Rect(425, 300, 60, 60), "media/comidaHamster.png"),
-        Producto("Comida Peces", 8, pygame.Rect(575, 300, 60, 60), "media/comidaPeces.png"),
-        Producto("Juguete Perro", 20, pygame.Rect(125, 400, 60, 60), "media/jueguetesPerro.png"),
-        Producto("Juguete Gato", 15, pygame.Rect(275, 400, 60, 60), "media/juguetesGato.png"),
-        Producto("Juguete Hamster", 12, pygame.Rect(425, 400, 60, 60), "media/jueguetesHamster.png"),
-        Producto("Juguete Peces", 10, pygame.Rect(575, 400, 60, 60), "media/juguetesPeces.png"),
-        Producto("Spray Limpieza", 15, pygame.Rect(125, 500, 60, 60), "media/limpiezaSpray.png"),
-        Producto("Bolsas Basura", 5, pygame.Rect(275, 500, 60, 60), "media/limpiezaBolsas.png"),
-        Producto("Aspiradora", 120, pygame.Rect(425, 500, 60, 60), "media/limpiezaAspiradora.png"),
+
+    # ================= ANIMALES =================
+    1: [
+        Producto("Perro", 500, pygame.Rect(125, 250, 60, 60), "media/animalPerro.png"),
+        Producto("Gato", 400, pygame.Rect(275, 250, 60, 60), "media/animalGato.png"),
+        Producto("Hamster", 50, pygame.Rect(125, 375, 60, 60), "media/animalHamster.png"),
+        Producto("Pez", 20, pygame.Rect(275, 375, 60, 60), "media/animalPez.png"),
+
+        Producto("Comida Perros", 30, pygame.Rect(125, 550, 60, 60), "media/comidaPerros.png"),
+        Producto("Comida Gatos", 25, pygame.Rect(275, 550, 60, 60), "media/comidaGatos.png"),
+        Producto("Comida Hamster", 10, pygame.Rect(125, 675, 60, 60), "media/comidaHamster.png"),
+        Producto("Comida Peces", 8, pygame.Rect(275, 675, 60, 60), "media/comidaPeces.png"),
+
+        Producto("Juguete Perro", 20, pygame.Rect(475, 550, 60, 60), "media/jueguetesPerro.png"),
+        Producto("Juguete Gato", 15, pygame.Rect(625, 550, 60, 60), "media/juguetesGato.png"),
+        Producto("Juguete Hamster", 12, pygame.Rect(475, 675, 60, 60), "media/jueguetesHamster.png"),
+        Producto("Juguete Peces", 10, pygame.Rect(625, 675, 60, 60), "media/juguetesPeces.png"),
+
+        Producto("Spray Limpieza", 15, pygame.Rect(475, 250, 60, 60), "media/limpiezaSpray.png"),
+        Producto("Bolsas Basura", 5, pygame.Rect(625, 250, 60, 60), "media/limpiezaBolsas.png"),
+        Producto("Aspiradora", 120, pygame.Rect(475, 375, 60, 60), "media/limpiezaAspiradora.png"),
+    ],
+
+    # ================= INFORMÁTICA =================
+    2: [
+        Producto("PC Azul", 900, pygame.Rect(125, 250, 60, 60), "media/ordenadorAzul.png"),
+        Producto("PC Blanco", 900, pygame.Rect(275, 250, 60, 60), "media/ordenadorBlanco.png"),
+        Producto("PC Negro", 900, pygame.Rect(125, 375, 60, 60), "media/ordenadorNegro.png"),
+        Producto("PC Verde", 900, pygame.Rect(275, 375, 60, 60), "media/ordenadorVerde.png"),
+
+        Producto("Teclado Blanco", 60, pygame.Rect(125, 550, 60, 60), "media/tecladoBlanco.png"),
+        Producto("Teclado Negro", 60, pygame.Rect(275, 550, 60, 60), "media/tecladoNegro.png"),
+        Producto("Ratón Blanco", 35, pygame.Rect(125, 675, 60, 60), "media/ratonBlanco.png"),
+        Producto("Ratón Negro", 35, pygame.Rect(275, 675, 60, 60), "media/ratonNegro.png"),
+
+        Producto("Cascos Blancos AirPods", 150, pygame.Rect(475, 550, 60, 60), "media/cascosBlancosAirPods.png"),
+        Producto("Cascos Blancos Diadema", 120, pygame.Rect(625, 550, 60, 60), "media/cascosBlancosDiadema.png"),
+        Producto("Cascos Negros AirPods", 150, pygame.Rect(475, 675, 60, 60), "media/cascosNegrosAirPods.png"),
+        Producto("Cascos Negros Diadema", 120, pygame.Rect(625, 675, 60, 60), "media/cascosNegrosDiadema.png"),
+
+        Producto("PlayStation", 500, pygame.Rect(475, 250, 60, 60), "media/consolaPlay.png"),
+        Producto("Xbox", 500, pygame.Rect(625, 250, 60, 60), "media/consolaXbox.png"),
+        Producto("Nintendo Switch", 450, pygame.Rect(475, 375, 60, 60), "media/consolaSwitch.png"),
+    ],
+
+    # ================= SUPERMERCADO =================
+    3: [
+        Producto("Manzana", 2, pygame.Rect(125, 250, 60, 60), "media/frutaManzana.png"),
+        Producto("Plátano", 2, pygame.Rect(275, 250, 60, 60), "media/frutaPlatano.png"),
+        Producto("Brócoli", 3, pygame.Rect(125, 375, 60, 60), "media/frutaBrocoli.png"),
+        Producto("Judías", 3, pygame.Rect(275, 375, 60, 60), "media/frutaJudias.png"),
+
+        Producto("Agua", 1, pygame.Rect(125, 550, 60, 60), "media/frescosAgua.png"),
+        Producto("Leche", 1.5, pygame.Rect(275, 550, 60, 60), "media/frescosLeche.png"),
+        Producto("Huevos", 3, pygame.Rect(125, 675, 60, 60), "media/fresosHuevos.png"),
+        Producto("Sushi", 6, pygame.Rect(275, 675, 60, 60), "media/frescosSushi.png"),
+
+        Producto("Croissants", 2.5, pygame.Rect(475, 250, 60, 60), "media/bolleriaCroisants.png"),
+        Producto("Napolitanas", 2.5, pygame.Rect(625, 250, 60, 60), "media/bolleriaNapolitanas.png"),
+        Producto("Crepes", 3, pygame.Rect(475, 375, 60, 60), "media/bolleriasCrepes.png"),
+        Producto("Tarta", 8, pygame.Rect(625, 375, 60, 60), "media/bolleriasTartas.png"),
+
+        Producto("Nuggets", 4, pygame.Rect(475, 550, 60, 60), "media/precocinadosNuggets.png"),
+        Producto("Patatas", 3, pygame.Rect(625, 550, 60, 60), "media/precocinadosPatatas.png"),
+        Producto("Canelones", 4, pygame.Rect(475, 675, 60, 60), "media/precocinadosCanelones.png"),
+        Producto("Migas", 3, pygame.Rect(625, 675, 60, 60), "media/precocinadosMigas.png"),
     ]
 }
 
@@ -169,7 +229,6 @@ while run:
             run = False
 
         if e.type == pygame.KEYDOWN:
-
             if e.key == pygame.K_v:
                 mostrar_carrito = not mostrar_carrito
                 mostrar_comprados = False
@@ -251,7 +310,10 @@ while run:
         win.blit(s, (125, 120))
 
         win.blit(fuente_grande.render("Carrito", True, (200, 200, 255)), (150, 140))
-        win.blit(fuente_peque.render("[R] Comprar todo   [T] Quitar último", True, (180, 255, 180)), (150, 180))
+        win.blit(
+            fuente_peque.render("[R] Comprar todo   [T] Quitar último", True, (180, 255, 180)),
+            (150, 180)
+        )
 
         for i, p in enumerate(carrito):
             win.blit(
@@ -287,4 +349,3 @@ while run:
     pygame.display.update()
 
 pygame.quit()
-
