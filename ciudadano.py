@@ -10,11 +10,18 @@ class Ciudadano:
         self.ancho_pantalla = ancho_pantalla
         self.alto_pantalla = alto_pantalla
 
-        self.img_idle = pygame.image.load("media/quieto.png").convert_alpha()
-        self.img_move = pygame.image.load("media/correr.png").convert_alpha()
-
-        self.img_idle = pygame.transform.scale(self.img_idle, (self.size, self.size))
-        self.img_move = pygame.transform.scale(self.img_move, (self.size, self.size))
+        # Asegúrate de tener estas imágenes o el código usará placeholders si lo manejas en main
+        try:
+            self.img_idle = pygame.image.load("media/quieto.png").convert_alpha()
+            self.img_move = pygame.image.load("media/correr.png").convert_alpha()
+            self.img_idle = pygame.transform.scale(self.img_idle, (int(self.size), int(self.size)))
+            self.img_move = pygame.transform.scale(self.img_move, (int(self.size), int(self.size)))
+        except:
+            # Fallback simple por si no encuentra imagenes al ejecutar este test
+            self.img_idle = pygame.Surface((int(self.size), int(self.size)))
+            self.img_idle.fill((0, 0, 255))
+            self.img_move = pygame.Surface((int(self.size), int(self.size)))
+            self.img_move.fill((0, 255, 255))
 
         self.is_moving = False
 
