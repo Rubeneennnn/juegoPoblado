@@ -55,7 +55,7 @@ class Producto:
             win.blit(self.img, self.rect.topleft)
 
     def obtener_info(self):
-        """ Método polimórfico base """
+        #""" Método polimórfico base """
         return f"{self.nombre} - {self.precio}€"
 
 # --- CLASES HIJAS ---
