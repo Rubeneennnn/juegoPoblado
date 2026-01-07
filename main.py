@@ -1,3 +1,5 @@
+#Arreglar el historial y arreglar el carrito cuando se vaya de la tienda.
+
 import pygame
 from ciudadano import Ciudadano
 
@@ -9,9 +11,9 @@ win = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Simulador de Tiendas - OOP Completo")
 clock = pygame.time.Clock()
 
-# =====================================================
-# SISTEMA DE IMÁGENES
-# =====================================================
+
+# IMÁGENES
+
 IMAGENES = {}
 
 def cargar_img(ruta, size=None):
@@ -28,16 +30,16 @@ def cargar_img(ruta, size=None):
     IMAGENES[clave] = img
     return img
 
-# =====================================================
+
 # FUENTES
-# =====================================================
+
 fuente_peque = pygame.font.SysFont("Verdana", 16)
 fuente_normal = pygame.font.SysFont("Verdana", 26, bold=True)
 fuente_grande = pygame.font.SysFont("Verdana", 36, bold=True)
 
-# =====================================================
-# CLASES (HERENCIA Y POLIMORFISMO)
-# =====================================================
+
+# CLASES
+
 
 class Producto:
     """ Clase Padre """
@@ -81,9 +83,8 @@ class Tienda:
         self.fondo = cargar_img(fondo_path, (ANCHO, ALTO))
         self.items = items
 
-# =====================================================
-# LISTAS COMPLETAS DE PRODUCTOS (Objetos Hijos)
-# =====================================================
+
+# LISTAS COMPLETAS DE PRODUCTOS
 
 # TIENDA 0: ROPA
 items_ropa = [
@@ -108,7 +109,7 @@ items_ropa = [
     Ropa("Pantalón Negro", 50, pygame.Rect(625, 675, 60, 60), "media/pantalonNegro.png"),
 ]
 
-# TIENDA 1: ANIMALES (Usamos Mascota para todo lo de esta tienda)
+# TIENDA 1: ANIMALES
 items_animales = [
     Mascota("Perro", 500, pygame.Rect(125, 250, 60, 60), "media/animalPerro.png"),
     Mascota("Gato", 400, pygame.Rect(275, 250, 60, 60), "media/animalGato.png"),
@@ -196,11 +197,10 @@ imgs_entradas = [
     cargar_img("media/tienda4.png", (90, 120)),
 ]
 
-# =====================================================
 # ESTADO DEL JUEGO
-# =====================================================
+
 jugador = Ciudadano(300, 300, ANCHO, ALTO)
-dinero = 5000
+dinero = 4000
 carrito = []
 comprados = []
 en_tienda_id = -1
@@ -208,14 +208,12 @@ en_tienda_id = -1
 mostrar_carrito = False
 mostrar_comprados = False
 
-# Recursos UI
 fondo_pueblo = cargar_img("media/fondo.png", (ANCHO, ALTO))
 img_moneda = cargar_img("media/moneda.png", (30, 30))
 icono_carrito = cargar_img("media/carro.png", (60, 60))
 icono_comprados = cargar_img("media/compra.png", (60, 60))
 icono_salida = cargar_img("media/salida.png", (60, 60))
 
-# Notificaciones
 mensaje = ""
 timer_msg = 0
 
@@ -224,16 +222,15 @@ def notificar(txt):
     mensaje = txt
     timer_msg = 90
 
-# =====================================================
+
 # BUCLE PRINCIPAL
-# =====================================================
+
 run = True
 while run:
     clock.tick(60)
     keys = pygame.key.get_pressed()
     jugador_rect = pygame.Rect(jugador.x, jugador.y, jugador.size, jugador.size)
 
-    # --- EVENTOS ---
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             run = False
@@ -271,11 +268,11 @@ while run:
                 en_tienda_id = -1
                 jugador.x, jugador.y = 300, 300
 
-    # --- ACTUALIZACIÓN ---
+    # ACTUALIZACIÓN
     if not mostrar_carrito and not mostrar_comprados:
         jugador.mover(keys)
 
-    # --- DIBUJADO ---
+    # DIBUJADO
     if en_tienda_id == -1:
         win.blit(fondo_pueblo, (0, 0))
         for i, rect_t in enumerate(entradas_rects):
@@ -293,7 +290,7 @@ while run:
                 lbl = fuente_peque.render(f"{p.precio}€ [E]", True, (255, 255, 255))
                 win.blit(lbl, (p.rect.x - 5, p.rect.y - 25))
 
-    # --- UI ESTÁTICA ---
+    # CARRITOS
     win.blit(icono_salida, (580, 10))
     win.blit(icono_comprados, (650, 10))
     win.blit(icono_carrito, (720, 10))
@@ -306,7 +303,7 @@ while run:
     win.blit(img_moneda, (20, 20))
     win.blit(fuente_normal.render(str(round(dinero, 2)), True, (255, 215, 0)), (60, 18))
 
-    # --- CARRITO (POLIMORFISMO VISUAL) ---
+    # CARRITO
     if mostrar_carrito:
         s = pygame.Surface((550, 500), pygame.SRCALPHA)
         pygame.draw.rect(s, (40, 40, 40, 230), s.get_rect(), border_radius=20)
@@ -321,7 +318,7 @@ while run:
                 (150, 220 + i * 28)
             )
 
-    # --- COMPRADOS ---
+    # COMPRADOS
     if mostrar_comprados:
         s = pygame.Surface((550, 500), pygame.SRCALPHA)
         pygame.draw.rect(s, (30, 50, 30, 230), s.get_rect(), border_radius=20)
