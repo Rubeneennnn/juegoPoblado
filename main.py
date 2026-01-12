@@ -1,5 +1,3 @@
-#Arreglar el historial y arreglar el carrito cuando se vaya de la tienda.
-
 import pygame
 from ciudadano import Ciudadano
 

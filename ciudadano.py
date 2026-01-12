@@ -10,7 +10,6 @@ class Ciudadano:
         self.ancho_pantalla = ancho_pantalla
         self.alto_pantalla = alto_pantalla
 
-        # Asegúrate de tener estas imágenes o el código usará placeholders si lo manejas en main
         try:
             self.img_idle = pygame.image.load("media/quieto.png").convert_alpha()
             self.img_move = pygame.image.load("media/correr.png").convert_alpha()
